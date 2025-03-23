@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -14,7 +13,7 @@ const Splash = () => {
     const counselor = predefinedUsers.find(user => user.role === 'counselor');
     if (counselor) {
       setCurrentUser(counselor);
-      navigate('/');
+      navigate('/counselor');
     }
   };
 
