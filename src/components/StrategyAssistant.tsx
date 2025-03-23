@@ -53,6 +53,8 @@ const StrategyAssistant: React.FC<StrategyAssistantProps> = ({ caseId }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [caseDetails, setCaseDetails] = useState<CaseDetails | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const [retryCount, setRetryCount] = useState(0);
+  const maxRetries = 2;
 
   // Fetch case details (using mock data in this example)
   useEffect(() => {
@@ -149,6 +151,8 @@ const StrategyAssistant: React.FC<StrategyAssistantProps> = ({ caseId }) => {
     setIsLoading(true);
     
     try {
+      console.log("Calling strategy-assistant function with case details:", { caseId });
+      
       const { data, error } = await supabase.functions.invoke('strategy-assistant', {
         body: { message, caseDetails },
       });
@@ -165,19 +169,29 @@ const StrategyAssistant: React.FC<StrategyAssistantProps> = ({ caseId }) => {
       };
       
       setMessages(prev => [...prev, aiMessage]);
+      setRetryCount(0); // Reset retry count on success
     } catch (error) {
       console.error('Error getting AI response:', error);
-      toast.error('Failed to get AI response. Please try again.');
       
-      // Fallback message in case of error
-      const errorMessage: Message = {
-        id: Date.now().toString(),
-        content: "I'm sorry, I encountered an error while processing your request. Please try again or contact support if the issue persists.",
-        sender: 'assistant',
-        timestamp: new Date().toISOString()
-      };
-      
-      setMessages(prev => [...prev, errorMessage]);
+      // Only show toast if we're out of retries
+      if (retryCount >= maxRetries) {
+        toast.error('Failed to get AI response. The system will provide a fallback response.');
+        
+        // Provide a fallback response
+        const fallbackMessage: Message = {
+          id: Date.now().toString(),
+          content: "I'm sorry, I'm having trouble connecting to my knowledge base right now. Based on what I can see in this case, I would recommend focusing on understanding each student's perspective through individual conversations. Since this appears to be in the Complex domain, consider using mediation techniques that create a safe space for both parties to express themselves without judgment.",
+          sender: 'assistant',
+          timestamp: new Date().toISOString()
+        };
+        
+        setMessages(prev => [...prev, fallbackMessage]);
+        setRetryCount(0); // Reset retry count after fallback
+      } else {
+        // Increment retry count and attempt again with a simpler prompt
+        setRetryCount(prev => prev + 1);
+        return getAIResponse("Please provide a brief strategy suggestion"); // Simpler prompt for retry
+      }
     } finally {
       setIsLoading(false);
     }

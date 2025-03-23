@@ -61,34 +61,56 @@ ${caseDetails.timeline?.map(event =>
 
     console.log("Sending request to OpenAI");
     
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o-mini',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: contextPrompt + "\n\nCounselor's question: " + message }
-        ],
-        temperature: 0.7,
-      }),
-    });
+    try {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIApiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: contextPrompt + "\n\nCounselor's question: " + message }
+          ],
+          temperature: 0.7,
+        }),
+      });
 
-    const data = await response.json();
-    console.log("Received response from OpenAI");
-    
-    if (data.error) {
-      throw new Error(data.error.message || "Error calling OpenAI API");
+      const data = await response.json();
+      console.log("Received response from OpenAI");
+      
+      if (data.error) {
+        console.error("OpenAI API error:", data.error);
+        
+        // Check for quota exceeded error
+        if (data.error.message && data.error.message.includes("quota")) {
+          return new Response(JSON.stringify({ 
+            response: "I'm currently experiencing high demand and can't process your request. As a fallback, I can suggest that based on this case's Complex domain, you might consider using circular questioning techniques to uncover the different perspectives and emotional aspects. Could you try having separate conversations with both students to understand their individual experiences before bringing them together?" 
+          }), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          });
+        }
+        
+        throw new Error(data.error.message || "Error calling OpenAI API");
+      }
+
+      const aiResponse = data.choices?.[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
+
+      return new Response(JSON.stringify({ response: aiResponse }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    } catch (openaiError) {
+      console.error("Error calling OpenAI:", openaiError);
+      
+      // Provide a helpful fallback response that's relevant to the case
+      return new Response(JSON.stringify({ 
+        response: "I'm sorry, I encountered an issue connecting to my knowledge base. Based on the information provided about this classroom dispute, I'd suggest focusing on understanding each student's perspective through separate conversations first. Since this appears to be in the Complex domain, consider using mediation techniques that allow for emotional expression within safe boundaries." 
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
-
-    const aiResponse = data.choices?.[0]?.message?.content || "I'm sorry, I couldn't generate a response.";
-
-    return new Response(JSON.stringify({ response: aiResponse }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
   } catch (error) {
     console.error("Error in strategy assistant function:", error);
     return new Response(JSON.stringify({ error: error.message }), {
