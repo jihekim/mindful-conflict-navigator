@@ -168,7 +168,8 @@ const StrategyAssistant: React.FC<StrategyAssistantProps> = ({ caseId }) => {
         </form>
       </div>
       
-      <style jsx>{`
+      <style>
+        {`
         .typing-indicator {
           display: flex;
           align-items: center;
@@ -200,7 +201,8 @@ const StrategyAssistant: React.FC<StrategyAssistantProps> = ({ caseId }) => {
           0%, 80%, 100% { transform: translateY(0); }
           40% { transform: translateY(-6px); }
         }
-      `}</style>
+        `}
+      </style>
     </div>
   );
 };
