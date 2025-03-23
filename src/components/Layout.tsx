@@ -3,6 +3,7 @@ import React from 'react';
 import { SidebarProvider, Sidebar, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from "@/components/ui/sidebar";
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CalendarDays, FolderOpen, LayoutDashboard, MessageSquare, Users } from 'lucide-react';
+import RoleSwitcher from './RoleSwitcher';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -13,7 +14,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
   const location = useLocation();
 
   const menuItems = [
-    { icon: LayoutDashboard, label: 'Dashboard', path: '/' },
+    { icon: LayoutDashboard, label: 'Dashboard', path: '/counselor' },
     { icon: FolderOpen, label: 'Cases', path: '/cases' },
     { icon: Users, label: 'Stakeholders', path: '/stakeholders' },
     { icon: CalendarDays, label: 'Schedule', path: '/schedule' },
@@ -45,15 +46,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
               </SidebarMenu>
             </SidebarContent>
             <div className="p-6 border-t border-border">
-              <div className="flex items-center">
-                <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
-                  C
-                </div>
-                <div className="ml-3">
-                  <p className="text-sm font-medium">Counselor</p>
-                  <p className="text-xs text-muted-foreground">Admin</p>
-                </div>
-              </div>
+              <RoleSwitcher />
             </div>
           </div>
         </Sidebar>
