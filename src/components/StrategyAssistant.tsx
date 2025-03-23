@@ -6,12 +6,34 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Message {
   id: string;
   content: string;
   sender: 'user' | 'assistant';
   timestamp: string;
+}
+
+interface TimelineEvent {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  tag?: string;
+  stakeholder?: string;
+}
+
+interface CaseDetails {
+  id: string;
+  title: string;
+  stakeholders: string[];
+  status: 'New' | 'In Progress' | 'Resolved';
+  dateCreated: string;
+  timeline: TimelineEvent[];
+  cynefinDomain: 'Clear' | 'Complicated' | 'Complex' | 'Chaotic';
+  cynefinRationale: string;
 }
 
 interface StrategyAssistantProps {
@@ -29,34 +51,136 @@ const StrategyAssistant: React.FC<StrategyAssistantProps> = ({ caseId }) => {
   ]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [caseDetails, setCaseDetails] = useState<CaseDetails | null>(null);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
-  // Simulated AI response for demo purposes
-  const simulateAIResponse = (message: string) => {
+  // Fetch case details (using mock data in this example)
+  useEffect(() => {
+    const fetchCaseDetails = async () => {
+      if (!caseId) return;
+      
+      // For demo purposes, we're using mock data
+      // In a real app, this would be fetched from Supabase
+      const mockCaseDetails: { [key: string]: CaseDetails } = {
+        '1': {
+          id: '1',
+          title: 'Classroom Dispute: 9A',
+          stakeholders: ['Student A', 'Student B', 'Teacher Jones'],
+          status: 'New',
+          dateCreated: '2023-06-10',
+          timeline: [
+            {
+              id: '1-1',
+              title: 'Initial Verbal Exchange',
+              description: 'Student A made a comment about Student B\'s presentation that B found hurtful.',
+              date: '2023-06-08',
+              tag: 'Trigger',
+              stakeholder: 'Student A'
+            },
+            {
+              id: '1-2',
+              title: 'Physical Altercation',
+              description: 'Student B pushed Student A after class while leaving the room.',
+              date: '2023-06-08',
+              tag: 'Escalation',
+              stakeholder: 'Student B'
+            },
+            {
+              id: '1-3',
+              title: 'Teacher Intervention',
+              description: 'Teacher Jones separated students but didn\'t address underlying issue.',
+              date: '2023-06-08',
+              stakeholder: 'Teacher Jones'
+            },
+            {
+              id: '1-4',
+              title: 'Continued Tension',
+              description: 'Students refused to work together on group project.',
+              date: '2023-06-09',
+              tag: 'Escalation'
+            }
+          ],
+          cynefinDomain: 'Complex',
+          cynefinRationale: 'This conflict is currently in the Complex domain due to conflicting emotional narratives and unclear intentions from both sides. The situation involves multiple perspectives and emotional factors that are difficult to fully understand. Standard disciplinary approaches may not address the underlying relationship issues.'
+        },
+        '2': {
+          id: '2',
+          title: 'Lunchroom Incident',
+          stakeholders: ['Student C', 'Cafeteria Staff', 'Student D'],
+          status: 'In Progress',
+          dateCreated: '2023-06-08',
+          timeline: [
+            {
+              id: '2-1',
+              title: 'Lunch Line Disagreement',
+              description: 'Student C accused Student D of cutting the lunch line.',
+              date: '2023-06-07',
+              tag: 'Trigger',
+              stakeholder: 'Student C'
+            },
+            {
+              id: '2-2',
+              title: 'Food Throwing Incident',
+              description: 'Student D allegedly threw food toward Student C\'s table.',
+              date: '2023-06-07',
+              tag: 'Escalation',
+              stakeholder: 'Student D'
+            },
+            {
+              id: '2-3',
+              title: 'Staff Intervention',
+              description: 'Cafeteria staff reported both students to administration.',
+              date: '2023-06-07',
+              stakeholder: 'Cafeteria Staff'
+            }
+          ],
+          cynefinDomain: 'Complicated',
+          cynefinRationale: 'This conflict appears to be in the Complicated domain because while there is a clear sequence of events, understanding the social dynamics and group loyalties requires expert analysis. There are established protocols for lunchroom behavior but we need a deeper understanding of the social context.'
+        }
+      };
+      
+      setCaseDetails(mockCaseDetails[caseId] || null);
+    };
+    
+    fetchCaseDetails();
+  }, [caseId]);
+  
+  const getAIResponse = async (message: string) => {
     setIsLoading(true);
     
-    // Simulate network delay
-    setTimeout(() => {
-      const aiResponses = [
-        "Based on the timeline, I notice this conflict moved from Clear to Complex when the teacher got involved. Consider a circle-based dialogue where each stakeholder can share their perception without interruption.",
-        "Since this is in the Complex domain, I recommend trying emergent practices rather than prescriptive solutions. Perhaps start with individual reflections before bringing the parties together.",
-        "The timeline suggests there are multiple interpretations of the same events. This is typical of Complex situations. Consider using a narrative mapping exercise where each person illustrates their version of events.",
-        "For moving from Complex to Complicated, you'll need to establish some shared facts. Consider a facilitated session where stakeholders identify what they can agree on, however small.",
-        "Looking at the emotional patterns in the timeline, I notice escalation occurs when certain topics emerge. Consider setting communication boundaries around these trigger points."
-      ];
+    try {
+      const { data, error } = await supabase.functions.invoke('strategy-assistant', {
+        body: { message, caseDetails },
+      });
       
-      const randomResponse = aiResponses[Math.floor(Math.random() * aiResponses.length)];
+      if (error) {
+        throw new Error(error.message);
+      }
       
       const aiMessage: Message = {
         id: Date.now().toString(),
-        content: randomResponse,
+        content: data.response,
         sender: 'assistant',
         timestamp: new Date().toISOString()
       };
       
       setMessages(prev => [...prev, aiMessage]);
+    } catch (error) {
+      console.error('Error getting AI response:', error);
+      toast.error('Failed to get AI response. Please try again.');
+      
+      // Fallback message in case of error
+      const errorMessage: Message = {
+        id: Date.now().toString(),
+        content: "I'm sorry, I encountered an error while processing your request. Please try again or contact support if the issue persists.",
+        sender: 'assistant',
+        timestamp: new Date().toISOString()
+      };
+      
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
       setIsLoading(false);
-    }, 1500);
+    }
   };
   
   const handleSendMessage = () => {
@@ -72,8 +196,8 @@ const StrategyAssistant: React.FC<StrategyAssistantProps> = ({ caseId }) => {
     setMessages(prev => [...prev, userMessage]);
     setNewMessage('');
     
-    // Simulate AI response
-    simulateAIResponse(newMessage);
+    // Get AI response
+    getAIResponse(newMessage);
   };
   
   // Auto-scroll to bottom when new messages arrive
@@ -118,7 +242,7 @@ const StrategyAssistant: React.FC<StrategyAssistantProps> = ({ caseId }) => {
                       : 'bg-accent text-accent-foreground mr-3'
                   }`}
                 >
-                  <p className="text-sm">{message.content}</p>
+                  <p className="text-sm whitespace-pre-line">{message.content}</p>
                   <p className="text-xs opacity-70 mt-1 text-right">
                     {new Date(message.timestamp).toLocaleTimeString([], {
                       hour: '2-digit',
@@ -161,8 +285,9 @@ const StrategyAssistant: React.FC<StrategyAssistantProps> = ({ caseId }) => {
             onChange={(e) => setNewMessage(e.target.value)}
             placeholder="Ask about strategies..."
             className="flex-1 mr-2"
+            disabled={isLoading}
           />
-          <Button type="submit" size="icon">
+          <Button type="submit" size="icon" disabled={isLoading}>
             <Send className="h-4 w-4" />
           </Button>
         </form>
