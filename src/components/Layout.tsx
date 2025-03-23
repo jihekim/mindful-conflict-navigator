@@ -26,7 +26,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
       <div className="min-h-screen flex w-full bg-background">
         <Sidebar className="border-r border-border">
           <div className="flex flex-col h-full">
-            <div className="p-6">
+            <div className="p-6 cursor-pointer" onClick={() => navigate('/')}>
               <h1 className="text-xl font-semibold tracking-tight">PDR</h1>
               <p className="text-xs text-muted-foreground mt-1">Conflict Mediation</p>
             </div>

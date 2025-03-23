@@ -17,7 +17,7 @@ const StakeholderLayout: React.FC<StakeholderLayoutProps> = ({ children }) => {
     <div className="min-h-screen flex flex-col bg-background">
       <header className="border-b border-border">
         <div className="container mx-auto py-4 px-6 flex items-center justify-between">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
             <h1 className="text-xl font-semibold tracking-tight">PDR</h1>
             <span className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-full">
               Stakeholder
