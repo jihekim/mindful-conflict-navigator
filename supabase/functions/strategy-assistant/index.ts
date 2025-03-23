@@ -74,7 +74,7 @@ ${caseDetails.timeline?.map(event =>
             { role: 'system', content: systemPrompt },
             { role: 'user', content: contextPrompt + "\n\nCounselor's question: " + message }
           ],
-          temperature: 0.7,
+          temperature: 0.5,
         }),
       });
 
