@@ -1,12 +1,14 @@
 
 import React, { useState } from 'react';
-import { Calendar, Edit, Plus, Tag, Trash2 } from 'lucide-react';
+import { Calendar, Edit, Plus, Tag, Trash2, User, AlertTriangle, Heart } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 export interface TimelineEvent {
   id: string;
@@ -15,6 +17,21 @@ export interface TimelineEvent {
   date: string;
   tag?: 'Trigger' | 'Escalation' | 'Resolution' | undefined;
   stakeholder?: string;
+  perspectives?: StakeholderPerspective[];
+  triggerPoints?: string[];
+  emotionalHistory?: EmotionalState[];
+}
+
+interface StakeholderPerspective {
+  stakeholder: string;
+  perspective: string;
+}
+
+interface EmotionalState {
+  stakeholder: string;
+  emotion: string;
+  intensity: number;
+  notes?: string;
 }
 
 interface TimelineProps {
@@ -25,6 +42,7 @@ interface TimelineProps {
 const Timeline: React.FC<TimelineProps> = ({ events, onUpdateEvents }) => {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [currentEvent, setCurrentEvent] = useState<TimelineEvent | null>(null);
   const [newEvent, setNewEvent] = useState<Partial<TimelineEvent>>({
     id: '',
@@ -32,7 +50,10 @@ const Timeline: React.FC<TimelineProps> = ({ events, onUpdateEvents }) => {
     description: '',
     date: '',
     tag: undefined,
-    stakeholder: ''
+    stakeholder: '',
+    perspectives: [],
+    triggerPoints: [],
+    emotionalHistory: []
   });
 
   const handleAddEvent = () => {
@@ -42,7 +63,10 @@ const Timeline: React.FC<TimelineProps> = ({ events, onUpdateEvents }) => {
       description: newEvent.description || '',
       date: newEvent.date || new Date().toISOString().split('T')[0],
       tag: newEvent.tag as TimelineEvent['tag'],
-      stakeholder: newEvent.stakeholder
+      stakeholder: newEvent.stakeholder,
+      perspectives: newEvent.perspectives || [],
+      triggerPoints: newEvent.triggerPoints || [],
+      emotionalHistory: newEvent.emotionalHistory || []
     };
     
     onUpdateEvents([...events, event]);
@@ -52,7 +76,10 @@ const Timeline: React.FC<TimelineProps> = ({ events, onUpdateEvents }) => {
       description: '',
       date: '',
       tag: undefined,
-      stakeholder: ''
+      stakeholder: '',
+      perspectives: [],
+      triggerPoints: [],
+      emotionalHistory: []
     });
     setIsAddDialogOpen(false);
   };
@@ -73,6 +100,11 @@ const Timeline: React.FC<TimelineProps> = ({ events, onUpdateEvents }) => {
     onUpdateEvents(updatedEvents);
   };
 
+  const handleViewEvent = (event: TimelineEvent) => {
+    setCurrentEvent(event);
+    setIsViewDialogOpen(true);
+  };
+
   const getTagColor = (tag?: string) => {
     switch (tag) {
       case 'Trigger':
@@ -84,6 +116,13 @@ const Timeline: React.FC<TimelineProps> = ({ events, onUpdateEvents }) => {
       default:
         return 'bg-blue-50 text-blue-700 border-blue-200';
     }
+  };
+
+  const getEmotionColor = (intensity: number) => {
+    if (intensity >= 8) return 'text-red-600';
+    if (intensity >= 5) return 'text-amber-600';
+    if (intensity >= 3) return 'text-blue-600';
+    return 'text-green-600';
   };
 
   return (
@@ -112,12 +151,16 @@ const Timeline: React.FC<TimelineProps> = ({ events, onUpdateEvents }) => {
               transition={{ duration: 0.2, delay: index * 0.05 }}
               className="timeline-item"
             >
-              <div className="bg-card shadow-subtle rounded-lg p-4 mb-4">
+              <div 
+                className="bg-card shadow-subtle rounded-lg p-4 mb-4 cursor-pointer hover:shadow-md transition-shadow"
+                onClick={() => handleViewEvent(event)}
+              >
                 <div className="flex justify-between items-start mb-2">
                   <h4 className="font-medium">{event.title}</h4>
                   <div className="flex space-x-2">
                     <button 
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         setCurrentEvent(event);
                         setIsEditDialogOpen(true);
                       }}
@@ -126,7 +169,10 @@ const Timeline: React.FC<TimelineProps> = ({ events, onUpdateEvents }) => {
                       <Edit className="w-4 h-4" />
                     </button>
                     <button 
-                      onClick={() => handleDeleteEvent(event.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteEvent(event.id);
+                      }}
                       className="text-muted-foreground hover:text-destructive transition-colors"
                     >
                       <Trash2 className="w-4 h-4" />
@@ -295,6 +341,140 @@ const Timeline: React.FC<TimelineProps> = ({ events, onUpdateEvents }) => {
           <DialogFooter>
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>Cancel</Button>
             <Button onClick={handleEditEvent}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Event Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>{currentEvent?.title}</DialogTitle>
+          </DialogHeader>
+          {currentEvent && (
+            <div className="py-4">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <Calendar className="w-4 h-4" />
+                  <span className="text-sm">{currentEvent.date}</span>
+                </div>
+                {currentEvent.tag && (
+                  <span className={`px-2 py-1 text-xs rounded-full border ${getTagColor(currentEvent.tag)}`}>
+                    {currentEvent.tag}
+                  </span>
+                )}
+              </div>
+              
+              <div className="mb-6">
+                <h4 className="text-sm font-medium mb-2">Incident Summary</h4>
+                <p className="text-sm text-muted-foreground bg-muted p-3 rounded-md">
+                  {currentEvent.description}
+                </p>
+              </div>
+              
+              <Accordion type="single" collapsible className="w-full">
+                <AccordionItem value="perspectives">
+                  <AccordionTrigger className="text-sm font-medium">
+                    <div className="flex items-center gap-2">
+                      <User className="w-4 h-4" />
+                      Stakeholder Perspectives
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    {currentEvent.perspectives && currentEvent.perspectives.length > 0 ? (
+                      <div className="space-y-3">
+                        {currentEvent.perspectives.map((perspective, index) => (
+                          <div key={index} className="bg-card border rounded-md p-3">
+                            <div className="flex items-center gap-2 mb-2">
+                              <Avatar className="h-6 w-6">
+                                <AvatarFallback className="text-xs">
+                                  {perspective.stakeholder.charAt(0)}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="font-medium text-sm">{perspective.stakeholder}</span>
+                            </div>
+                            <p className="text-sm text-muted-foreground">{perspective.perspective}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic">No stakeholder perspectives recorded.</p>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="triggers">
+                  <AccordionTrigger className="text-sm font-medium">
+                    <div className="flex items-center gap-2">
+                      <AlertTriangle className="w-4 h-4" />
+                      Trigger Points
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    {currentEvent.triggerPoints && currentEvent.triggerPoints.length > 0 ? (
+                      <ul className="space-y-2 pl-2">
+                        {currentEvent.triggerPoints.map((trigger, index) => (
+                          <li key={index} className="flex items-start gap-2 text-sm">
+                            <div className="mt-1.5 h-1.5 w-1.5 rounded-full bg-red-500 flex-shrink-0" />
+                            <span>{trigger}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic">No trigger points identified.</p>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+
+                <AccordionItem value="emotions">
+                  <AccordionTrigger className="text-sm font-medium">
+                    <div className="flex items-center gap-2">
+                      <Heart className="w-4 h-4" />
+                      Emotional History
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    {currentEvent.emotionalHistory && currentEvent.emotionalHistory.length > 0 ? (
+                      <div className="space-y-3">
+                        {currentEvent.emotionalHistory.map((emotion, index) => (
+                          <div key={index} className="bg-card border rounded-md p-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <Avatar className="h-6 w-6">
+                                  <AvatarFallback className="text-xs">
+                                    {emotion.stakeholder.charAt(0)}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="font-medium text-sm">{emotion.stakeholder}</span>
+                              </div>
+                              <span className={`text-sm font-medium ${getEmotionColor(emotion.intensity)}`}>
+                                {emotion.emotion} (Intensity: {emotion.intensity}/10)
+                              </span>
+                            </div>
+                            {emotion.notes && (
+                              <p className="text-sm text-muted-foreground">{emotion.notes}</p>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground italic">No emotional history recorded.</p>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>Close</Button>
+            <Button 
+              onClick={() => {
+                setIsViewDialogOpen(false);
+                setIsEditDialogOpen(true);
+              }}
+            >
+              Edit Event
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
