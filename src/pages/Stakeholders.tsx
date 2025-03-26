@@ -139,7 +139,7 @@ const Stakeholders = () => {
         
         <Card>
           <CardHeader className="px-6 py-4 border-b">
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList>
                 <TabsTrigger value="list">All Stakeholders</TabsTrigger>
                 {selectedStakeholder && (
@@ -152,30 +152,32 @@ const Stakeholders = () => {
             </Tabs>
           </CardHeader>
           <CardContent className="px-0 py-0">
-            <TabsContent value="list" className="m-0">
-              <StakeholderList 
-                stakeholders={filteredStakeholders} 
-                onSelectStakeholder={handleSelectStakeholder} 
-              />
-            </TabsContent>
-            
-            <TabsContent value="details" className="m-0">
-              {selectedStakeholder && (
-                <StakeholderDetail 
-                  stakeholder={selectedStakeholder} 
-                  onBack={handleBackToList}
+            <Tabs value={activeTab} onValueChange={setActiveTab}>
+              <TabsContent value="list" className="m-0">
+                <StakeholderList 
+                  stakeholders={filteredStakeholders} 
+                  onSelectStakeholder={handleSelectStakeholder} 
                 />
-              )}
-            </TabsContent>
-            
-            <TabsContent value="mediation" className="m-0">
-              {selectedStakeholder && (
-                <MediationPrep 
-                  stakeholder={selectedStakeholder} 
-                  onBack={handleBackToList}
-                />
-              )}
-            </TabsContent>
+              </TabsContent>
+              
+              <TabsContent value="details" className="m-0">
+                {selectedStakeholder && (
+                  <StakeholderDetail 
+                    stakeholder={selectedStakeholder} 
+                    onBack={handleBackToList}
+                  />
+                )}
+              </TabsContent>
+              
+              <TabsContent value="mediation" className="m-0">
+                {selectedStakeholder && (
+                  <MediationPrep 
+                    stakeholder={selectedStakeholder} 
+                    onBack={handleBackToList}
+                  />
+                )}
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       </div>
