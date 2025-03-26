@@ -1,6 +1,6 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send } from 'lucide-react';
+import { Send, ShieldCheck } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,6 +8,7 @@ import { Avatar } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import StakeholderLayout from '@/components/StakeholderLayout';
 import { useAuth } from '@/contexts/AuthContext';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface Message {
   id: string;
@@ -107,6 +108,13 @@ const StakeholderChat = () => {
 
   return (
     <StakeholderLayout>
+      <Alert className="mb-4 bg-[#5fb455]/10 border-[#5fb455]/20 text-[#4ea344]">
+        <ShieldCheck className="h-4 w-4" />
+        <AlertDescription>
+          This conversation is private and confidential. Nothing you share here will be stored or shared with anyone else.
+        </AlertDescription>
+      </Alert>
+      
       <div className="bg-card rounded-lg shadow-subtle overflow-hidden flex flex-col h-[600px]">
         <div className="p-4 border-b border-border">
           <h3 className="font-semibold">AI Chat Assistant</h3>
@@ -128,7 +136,7 @@ const StakeholderChat = () => {
                 <div className={`flex ${message.sender === 'user' ? 'flex-row-reverse' : 'flex-row'} max-w-[80%]`}>
                   <div className="flex-shrink-0 mr-3">
                     {message.sender === 'assistant' ? (
-                      <Avatar className="w-8 h-8 bg-primary text-primary-foreground">
+                      <Avatar className="w-8 h-8 bg-[#5fb455] text-primary-foreground">
                         <span className="text-xs">AI</span>
                       </Avatar>
                     ) : (
@@ -140,7 +148,7 @@ const StakeholderChat = () => {
                   <div
                     className={`p-3 rounded-lg ${
                       message.sender === 'user'
-                        ? 'bg-primary text-primary-foreground ml-3'
+                        ? 'bg-[#5fb455] text-primary-foreground ml-3'
                         : 'bg-accent text-accent-foreground mr-3'
                     }`}
                   >
@@ -188,7 +196,7 @@ const StakeholderChat = () => {
               placeholder="Share your experience..."
               className="flex-1 mr-2"
             />
-            <Button type="submit" size="icon">
+            <Button type="submit" size="icon" className="bg-[#5fb455] hover:bg-[#4ea344]">
               <Send className="h-4 w-4" />
             </Button>
           </form>

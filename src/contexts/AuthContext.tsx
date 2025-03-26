@@ -1,7 +1,7 @@
 
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
-export type UserRole = 'counselor' | 'student' | 'parent' | 'teacher' | 'police';
+export type UserRole = 'counselor' | 'student' | 'parent' | 'teacher' | 'police' | 'other';
 
 interface User {
   id: string;
@@ -43,11 +43,16 @@ export const predefinedUsers: User[] = [
     id: '5',
     name: 'Officer Parker',
     role: 'police',
+  },
+  {
+    id: '6',
+    name: 'Other Adult',
+    role: 'other',
   }
 ];
 
 export const AuthProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState<User | null>(predefinedUsers[0]);
+  const [currentUser, setCurrentUser] = useState<User | null>(null);
 
   return (
     <AuthContext.Provider

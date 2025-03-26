@@ -4,9 +4,20 @@ import StakeholderLayout from '@/components/StakeholderLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Switch } from '@/components/ui/switch';
 import { Button } from '@/components/ui/button';
-import { toast } from '@/hooks/use-toast';
-import { Lock, Eye, UserCheck, Users, School, Shield } from 'lucide-react';
+import { toast } from 'sonner';
+import { 
+  Lock, 
+  Eye, 
+  UserCheck, 
+  Users, 
+  School, 
+  Shield, 
+  Info, 
+  AlertCircle,
+  MessageSquare
+} from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const StakeholderShare = () => {
   const { currentUser } = useAuth();
@@ -22,30 +33,41 @@ const StakeholderShare = () => {
   
   const handleToggle = (setting: keyof typeof sharingSettings) => {
     if (setting === 'counselor') {
-      toast({
-        title: "Cannot modify this setting",
-        description: "Sharing with your counselor is required for mediation.",
-        variant: "destructive"
-      });
+      toast.error("Sharing with your counselor is required for mediation.");
       return;
     }
     
-    setSharingSettings(prev => ({
-      ...prev,
-      [setting]: !prev[setting]
-    }));
-    
-    toast({
-      title: "Sharing settings updated",
-      description: `Your report is now ${!sharingSettings[setting] ? 'shared with' : 'private from'} ${setting}.`,
-    });
+    if (sharingSettings[setting]) {
+      // If we're turning off sharing, show confirmation toast
+      toast.promise(
+        new Promise((resolve) => {
+          // Simulate API call
+          setTimeout(resolve, 1000);
+        }),
+        {
+          loading: `Revoking access from ${setting}...`,
+          success: () => {
+            setSharingSettings(prev => ({
+              ...prev,
+              [setting]: false
+            }));
+            return `Access successfully revoked from ${setting}`;
+          },
+          error: "Failed to revoke access"
+        }
+      );
+    } else {
+      setSharingSettings(prev => ({
+        ...prev,
+        [setting]: true
+      }));
+      
+      toast.success(`Your report is now shared with ${setting}.`);
+    }
   };
   
   const handleSaveSettings = () => {
-    toast({
-      title: "Sharing preferences saved",
-      description: "Your sharing settings have been updated successfully.",
-    });
+    toast.success("Sharing preferences saved successfully.");
   };
 
   return (
@@ -58,6 +80,13 @@ const StakeholderShare = () => {
           </p>
         </div>
         
+        <Alert className="bg-blue-50 text-blue-700 border-blue-100">
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            Your chat conversations remain completely private. Only your insight report can be shared with others to support the mediation process.
+          </AlertDescription>
+        </Alert>
+        
         <Card>
           <CardHeader>
             <CardTitle>Privacy Controls</CardTitle>
@@ -68,8 +97,8 @@ const StakeholderShare = () => {
           <CardContent className="space-y-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="bg-primary/10 p-2 rounded-full">
-                  <UserCheck className="h-5 w-5 text-primary" />
+                <div className="bg-[#5fb455]/10 p-2 rounded-full">
+                  <UserCheck className="h-5 w-5 text-[#5fb455]" />
                 </div>
                 <div>
                   <p className="font-medium">Counselor</p>
@@ -81,8 +110,8 @@ const StakeholderShare = () => {
             
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="bg-primary/10 p-2 rounded-full">
-                  <School className="h-5 w-5 text-primary" />
+                <div className="bg-[#5fb455]/10 p-2 rounded-full">
+                  <School className="h-5 w-5 text-[#5fb455]" />
                 </div>
                 <div>
                   <p className="font-medium">Teachers</p>
@@ -94,8 +123,8 @@ const StakeholderShare = () => {
             
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="bg-primary/10 p-2 rounded-full">
-                  <Users className="h-5 w-5 text-primary" />
+                <div className="bg-[#5fb455]/10 p-2 rounded-full">
+                  <Users className="h-5 w-5 text-[#5fb455]" />
                 </div>
                 <div>
                   <p className="font-medium">Other Students</p>
@@ -107,8 +136,8 @@ const StakeholderShare = () => {
             
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-4">
-                <div className="bg-primary/10 p-2 rounded-full">
-                  <Users className="h-5 w-5 text-primary" />
+                <div className="bg-[#5fb455]/10 p-2 rounded-full">
+                  <Users className="h-5 w-5 text-[#5fb455]" />
                 </div>
                 <div>
                   <p className="font-medium">Parents</p>
@@ -121,8 +150,8 @@ const StakeholderShare = () => {
             {currentUser?.role !== 'police' && (
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <div className="bg-primary/10 p-2 rounded-full">
-                    <Shield className="h-5 w-5 text-primary" />
+                  <div className="bg-[#5fb455]/10 p-2 rounded-full">
+                    <Shield className="h-5 w-5 text-[#5fb455]" />
                   </div>
                   <div>
                     <p className="font-medium">Police</p>
@@ -132,6 +161,32 @@ const StakeholderShare = () => {
                 <Switch checked={sharingSettings.police} onCheckedChange={() => handleToggle('police')} />
               </div>
             )}
+            
+            <div className="rounded-md bg-amber-50 p-4 text-amber-700 text-sm">
+              <div className="flex">
+                <AlertCircle className="h-5 w-5 mr-2 flex-shrink-0" />
+                <div>
+                  <h4 className="font-medium">Important Privacy Notice</h4>
+                  <p className="mt-1">
+                    You can revoke access at any time by toggling off these settings. Once revoked, 
+                    the person will no longer have access to your report.
+                  </p>
+                </div>
+              </div>
+            </div>
+            
+            <div className="rounded-md bg-[#5fb455]/10 p-4 text-[#4ea344] text-sm">
+              <div className="flex">
+                <MessageSquare className="h-5 w-5 mr-2 flex-shrink-0" />
+                <div>
+                  <h4 className="font-medium">Chat Privacy</h4>
+                  <p className="mt-1">
+                    Your conversations in the AI Chat are completely private and are never shared with anyone. 
+                    Only the insight report with your emotional analysis and summary can be shared.
+                  </p>
+                </div>
+              </div>
+            </div>
             
             <div className="pt-4 flex items-center justify-between border-t">
               <div className="flex items-center space-x-2 text-sm text-muted-foreground">
@@ -144,7 +199,7 @@ const StakeholderShare = () => {
               </div>
             </div>
             
-            <Button onClick={handleSaveSettings} className="w-full">Save Preferences</Button>
+            <Button onClick={handleSaveSettings} className="w-full bg-[#5fb455] hover:bg-[#4ea344]">Save Preferences</Button>
           </CardContent>
         </Card>
       </div>
