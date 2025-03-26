@@ -7,6 +7,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Splash from "./pages/Splash";
 import Index from "./pages/Index";
 import CaseDetail from "./pages/CaseDetail";
+import Stakeholders from "./pages/Stakeholders";
+import Schedule from "./pages/Schedule";
 import NotFound from "./pages/NotFound";
 import StakeholderChat from "./pages/stakeholder/StakeholderChat";
 import StakeholderReport from "./pages/stakeholder/StakeholderReport";
@@ -30,6 +32,8 @@ const App = () => (
             {/* Counselor Routes */}
             <Route path="/counselor" element={<Index />} />
             <Route path="/case/:id" element={<CaseDetail />} />
+            <Route path="/stakeholders" element={<Stakeholders />} />
+            <Route path="/schedule" element={<Schedule />} />
             
             {/* Stakeholder Routes */}
             <Route path="/stakeholder" element={<Navigate to="/stakeholder/chat" replace />} />
