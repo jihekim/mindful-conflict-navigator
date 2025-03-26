@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -14,6 +13,7 @@ import StakeholderChat from "./pages/stakeholder/StakeholderChat";
 import StakeholderReport from "./pages/stakeholder/StakeholderReport";
 import StakeholderShare from "./pages/stakeholder/StakeholderShare";
 import StakeholderSettings from "./pages/stakeholder/StakeholderSettings";
+import StakeholderMediationPrep from './pages/stakeholder/StakeholderMediationPrep';
 import { AuthProvider } from "./contexts/AuthContext";
 
 const queryClient = new QueryClient();
@@ -41,6 +41,7 @@ const App = () => (
             <Route path="/stakeholder/report" element={<StakeholderReport />} />
             <Route path="/stakeholder/share" element={<StakeholderShare />} />
             <Route path="/stakeholder/settings" element={<StakeholderSettings />} />
+            <Route path="/stakeholder/mediation-prep" element={<StakeholderMediationPrep />} />
             
             {/* Catch-all route */}
             <Route path="*" element={<NotFound />} />

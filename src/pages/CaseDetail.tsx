@@ -314,14 +314,11 @@ const mockCaseDetails: {
 };
 
 const CaseDetail = () => {
-  const {
-    id
-  } = useParams<{
-    id: string;
-  }>();
+  const { id } = useParams<{ id: string; }>();
   const navigate = useNavigate();
   const [caseDetails, setCaseDetails] = useState<CaseDetailType | null>(null);
   const [loading, setLoading] = useState(true);
+  
   useEffect(() => {
     // Simulate API fetch
     setTimeout(() => {
@@ -331,6 +328,7 @@ const CaseDetail = () => {
       setLoading(false);
     }, 500);
   }, [id]);
+  
   if (loading) {
     return <Layout>
         <div className="flex items-center justify-center h-screen">
@@ -341,6 +339,7 @@ const CaseDetail = () => {
         </div>
       </Layout>;
   }
+  
   if (!caseDetails) {
     return <Layout>
         <div className="p-6">
@@ -364,6 +363,7 @@ const CaseDetail = () => {
         </div>
       </Layout>;
   }
+  
   const handleTimelineUpdate = (updatedEvents: TimelineEvent[]) => {
     setCaseDetails({
       ...caseDetails,
@@ -371,6 +371,7 @@ const CaseDetail = () => {
     });
     toast.success("Timeline updated successfully");
   };
+  
   const handleCynefinUpdate = (domain: CynefinDomain, rationale: string) => {
     setCaseDetails({
       ...caseDetails,
@@ -379,6 +380,7 @@ const CaseDetail = () => {
     });
     toast.success("Cynefin framework assessment updated");
   };
+  
   const exportStrategy = () => {
     const content = `
 # Conflict Case Strategy: ${caseDetails.title}
@@ -421,7 +423,14 @@ ${caseDetails.cynefinRationale}
     URL.revokeObjectURL(url);
     toast.success("Strategy document exported successfully");
   };
-  return <Layout>
+
+  // New function to handle stakeholder tag clicks
+  const handleStakeholderClick = (stakeholderName: string) => {
+    navigate(`/stakeholders`, { state: { selectedStakeholder: stakeholderName } });
+  };
+  
+  return (
+    <Layout>
       <div className="p-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div className="flex items-center">
@@ -459,9 +468,15 @@ ${caseDetails.cynefinRationale}
         <div className="mb-6">
           <h2 className="text-sm font-medium text-muted-foreground mb-2">Stakeholders</h2>
           <div className="flex flex-wrap gap-2">
-            {caseDetails.stakeholders.map((stakeholder, index) => <div key={index} className="px-3 py-1.5 bg-accent rounded-full text-sm font-medium">
+            {caseDetails.stakeholders.map((stakeholder, index) => (
+              <div 
+                key={index} 
+                className="px-3 py-1.5 bg-accent rounded-full text-sm font-medium cursor-pointer hover:bg-accent/80 transition-colors"
+                onClick={() => handleStakeholderClick(stakeholder)}
+              >
                 {stakeholder}
-              </div>)}
+              </div>
+            ))}
           </div>
         </div>
         
@@ -516,6 +531,8 @@ ${caseDetails.cynefinRationale}
           </TabsContent>
         </Tabs>
       </div>
-    </Layout>;
+    </Layout>
+  );
 };
+
 export default CaseDetail;

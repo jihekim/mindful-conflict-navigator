@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MessageSquare, FileText, Settings, Share2 } from 'lucide-react';
+import { MessageSquare, FileText, Settings, Share2, FileUp } from 'lucide-react';
 import RoleSwitcher from './RoleSwitcher';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -55,6 +55,13 @@ const StakeholderLayout: React.FC<StakeholderLayoutProps> = ({ children }) => {
                 >
                   <FileText className="h-4 w-4" />
                   <span>My Insight Report</span>
+                </button>
+                <button
+                  onClick={() => navigate('/stakeholder/mediation-prep')}
+                  className="w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm hover:bg-accent transition-colors"
+                >
+                  <FileUp className="h-4 w-4" />
+                  <span>Mediation Prep</span>
                 </button>
                 <button
                   onClick={() => navigate('/stakeholder/share')}

@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Plus, Search } from 'lucide-react';
 import Layout from '@/components/Layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -89,9 +89,22 @@ const mockStakeholders = [
 
 const Stakeholders = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedStakeholder, setSelectedStakeholder] = useState<any>(null);
   const [activeTab, setActiveTab] = useState('list');
+  
+  // Handle navigation from case detail page
+  useEffect(() => {
+    const state = location.state as { selectedStakeholder?: string } | null;
+    if (state && state.selectedStakeholder) {
+      const stakeholder = mockStakeholders.find(s => s.name === state.selectedStakeholder);
+      if (stakeholder) {
+        setSelectedStakeholder(stakeholder);
+        setActiveTab('details');
+      }
+    }
+  }, [location.state]);
   
   const filteredStakeholders = mockStakeholders.filter(
     stakeholder => stakeholder.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -139,7 +152,7 @@ const Stakeholders = () => {
         
         <Card>
           <CardHeader className="px-6 py-4 border-b">
-            <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList>
                 <TabsTrigger value="list">All Stakeholders</TabsTrigger>
                 {selectedStakeholder && (
