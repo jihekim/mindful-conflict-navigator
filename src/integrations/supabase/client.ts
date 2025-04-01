@@ -3,6 +3,8 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
+// Note: In a production application, these values should be stored as environment variables
+// For this demo app, we're using publishable keys that are safe to expose in the client
 const SUPABASE_URL = "https://qqrybqosgzwipslciqke.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFxcnlicW9zZ3p3aXBzbGNpcWtlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDI2ODE1MjYsImV4cCI6MjA1ODI1NzUyNn0.8JMyzro23ogcOsRmeyr6qcn9c3Jv5b9Xc-wrEF06N6c";
 
