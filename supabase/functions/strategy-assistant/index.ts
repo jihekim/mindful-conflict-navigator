@@ -28,18 +28,19 @@ serve(async (req) => {
       throw new Error("OpenAI API key is not configured");
     }
 
-    // System prompt that helps the AI understand its role
+    // Enhanced system prompt that helps the AI understand its role and output format
     const systemPrompt = `You are an AI Strategy Assistant for conflict mediators and counselors.
 Your purpose is to help analyze conflicts and suggest effective resolution strategies.
 You have expertise in the Cynefin Framework (Clear, Complicated, Complex, Chaotic domains) and conflict mediation techniques.
 
-When responding, consider:
-1. The domain of the conflict in the Cynefin Framework
-2. The timeline of events and stakeholder perspectives
-3. Appropriate mediation techniques based on the conflict domain
-4. Practical next steps the counselor could take
+When responding, provide a detailed, structured response with these sections:
+1. STRATEGY OVERVIEW: Brief summary of the recommended approach (2-3 sentences)
+2. CYNEFIN DOMAIN: Identify the domain of the conflict and why it fits there
+3. MEDIATION PROCESS: List 3-5 clear, numbered steps the counselor should take
+4. ANTICIPATED EFFECTS: For each step, explain the expected outcome or effect
+5. CONSIDERATIONS: Note any important factors the counselor should be mindful of
 
-Be concise, practical, and specific in your suggestions. Focus on actionable advice rather than general principles.`;
+Be practical, specific, and actionable in your suggestions. Focus on concrete steps rather than general principles.`;
 
     // Create context from case details
     let contextPrompt = "";

@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { Send } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -6,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -14,6 +14,16 @@ interface Message {
   content: string;
   sender: 'user' | 'assistant';
   timestamp: string;
+  formattedContent?: FormattedContent;
+}
+
+interface FormattedContent {
+  overview?: string;
+  domain?: string;
+  process?: string[];
+  effects?: string[];
+  considerations?: string[];
+  rawContent: string;
 }
 
 interface TimelineEvent {
@@ -56,13 +66,10 @@ const StrategyAssistant: React.FC<StrategyAssistantProps> = ({ caseId }) => {
   const [retryCount, setRetryCount] = useState(0);
   const maxRetries = 2;
 
-  // Fetch case details (using mock data in this example)
   useEffect(() => {
     const fetchCaseDetails = async () => {
       if (!caseId) return;
       
-      // For demo purposes, we're using mock data
-      // In a real app, this would be fetched from Supabase
       const mockCaseDetails: { [key: string]: CaseDetails } = {
         '1': {
           id: '1',
@@ -147,6 +154,49 @@ const StrategyAssistant: React.FC<StrategyAssistantProps> = ({ caseId }) => {
     fetchCaseDetails();
   }, [caseId]);
   
+  const formatAIResponse = (content: string): FormattedContent => {
+    let formattedContent: FormattedContent = { rawContent: content };
+    
+    const overviewMatch = content.match(/STRATEGY OVERVIEW:?([\s\S]*?)(?=CYNEFIN DOMAIN:|MEDIATION PROCESS:|ANTICIPATED EFFECTS:|CONSIDERATIONS:|$)/i);
+    if (overviewMatch && overviewMatch[1]) {
+      formattedContent.overview = overviewMatch[1].trim();
+    }
+    
+    const domainMatch = content.match(/CYNEFIN DOMAIN:?([\s\S]*?)(?=MEDIATION PROCESS:|ANTICIPATED EFFECTS:|CONSIDERATIONS:|$)/i);
+    if (domainMatch && domainMatch[1]) {
+      formattedContent.domain = domainMatch[1].trim();
+    }
+    
+    const processMatch = content.match(/MEDIATION PROCESS:?([\s\S]*?)(?=ANTICIPATED EFFECTS:|CONSIDERATIONS:|$)/i);
+    if (processMatch && processMatch[1]) {
+      const processList = processMatch[1].trim().split(/\d+\./).filter(item => item.trim() !== '');
+      formattedContent.process = processList.map(item => item.trim());
+    }
+    
+    const effectsMatch = content.match(/ANTICIPATED EFFECTS:?([\s\S]*?)(?=CONSIDERATIONS:|$)/i);
+    if (effectsMatch && effectsMatch[1]) {
+      const effectsList = effectsMatch[1].trim().split(/\d+\.|\n-/).filter(item => item.trim() !== '');
+      formattedContent.effects = effectsList.map(item => item.trim());
+    }
+    
+    const considerationsMatch = content.match(/CONSIDERATIONS:?([\s\S]*?)(?=$)/i);
+    if (considerationsMatch && considerationsMatch[1]) {
+      const considerationsList = considerationsMatch[1]
+        .trim()
+        .split(/\n-|\n•/)
+        .filter(item => item.trim() !== '')
+        .map(item => item.trim());
+        
+      formattedContent.considerations = considerationsList;
+    }
+    
+    if (!formattedContent.overview && !formattedContent.process) {
+      return { rawContent: content };
+    }
+    
+    return formattedContent;
+  };
+  
   const getAIResponse = async (message: string) => {
     setIsLoading(true);
     
@@ -161,23 +211,24 @@ const StrategyAssistant: React.FC<StrategyAssistantProps> = ({ caseId }) => {
         throw new Error(error.message);
       }
       
+      const formattedContent = formatAIResponse(data.response);
+      
       const aiMessage: Message = {
         id: Date.now().toString(),
         content: data.response,
         sender: 'assistant',
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        formattedContent
       };
       
       setMessages(prev => [...prev, aiMessage]);
-      setRetryCount(0); // Reset retry count on success
+      setRetryCount(0);
     } catch (error) {
       console.error('Error getting AI response:', error);
       
-      // Only show toast if we're out of retries
       if (retryCount >= maxRetries) {
         toast.error('Failed to get AI response. The system will provide a fallback response.');
         
-        // Provide a fallback response
         const fallbackMessage: Message = {
           id: Date.now().toString(),
           content: "I'm sorry, I'm having trouble connecting to my knowledge base right now. Based on what I can see in this case, I would recommend focusing on understanding each student's perspective through individual conversations. Since this appears to be in the Complex domain, consider using mediation techniques that create a safe space for both parties to express themselves without judgment.",
@@ -186,11 +237,10 @@ const StrategyAssistant: React.FC<StrategyAssistantProps> = ({ caseId }) => {
         };
         
         setMessages(prev => [...prev, fallbackMessage]);
-        setRetryCount(0); // Reset retry count after fallback
+        setRetryCount(0);
       } else {
-        // Increment retry count and attempt again with a simpler prompt
         setRetryCount(prev => prev + 1);
-        return getAIResponse("Please provide a brief strategy suggestion"); // Simpler prompt for retry
+        return getAIResponse("Please provide a brief strategy suggestion");
       }
     } finally {
       setIsLoading(false);
@@ -210,16 +260,91 @@ const StrategyAssistant: React.FC<StrategyAssistantProps> = ({ caseId }) => {
     setMessages(prev => [...prev, userMessage]);
     setNewMessage('');
     
-    // Get AI response
     getAIResponse(newMessage);
   };
   
-  // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const renderAIMessage = (message: Message) => {
+    if (message.formattedContent && 
+       (message.formattedContent.overview || message.formattedContent.process)) {
+      return (
+        <Card className="w-full bg-accent text-accent-foreground">
+          {message.formattedContent.overview && (
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base">Strategy Overview</CardTitle>
+              <CardDescription className="text-accent-foreground/90 text-sm">
+                {message.formattedContent.overview}
+              </CardDescription>
+            </CardHeader>
+          )}
+          <CardContent className="space-y-4 pt-0">
+            {message.formattedContent.domain && (
+              <div>
+                <h4 className="font-medium text-sm mb-1">Cynefin Domain</h4>
+                <p className="text-sm text-accent-foreground/90">{message.formattedContent.domain}</p>
+              </div>
+            )}
+            
+            {message.formattedContent.process && message.formattedContent.process.length > 0 && (
+              <div>
+                <h4 className="font-medium text-sm mb-1">Mediation Process</h4>
+                <ol className="list-decimal pl-5 space-y-1">
+                  {message.formattedContent.process.map((step, index) => (
+                    <li key={index} className="text-sm text-accent-foreground/90">{step}</li>
+                  ))}
+                </ol>
+              </div>
+            )}
+            
+            {message.formattedContent.effects && message.formattedContent.effects.length > 0 && (
+              <div>
+                <h4 className="font-medium text-sm mb-1">Anticipated Effects</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  {message.formattedContent.effects.map((effect, index) => (
+                    <li key={index} className="text-sm text-accent-foreground/90">{effect}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            
+            {message.formattedContent.considerations && message.formattedContent.considerations.length > 0 && (
+              <div>
+                <h4 className="font-medium text-sm mb-1">Key Considerations</h4>
+                <ul className="list-disc pl-5 space-y-1">
+                  {message.formattedContent.considerations.map((consideration, index) => (
+                    <li key={index} className="text-sm text-accent-foreground/90">{consideration}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </CardContent>
+          <CardFooter className="text-xs text-accent-foreground/70 justify-end pt-0">
+            {new Date(message.timestamp).toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit'
+            })}
+          </CardFooter>
+        </Card>
+      );
+    }
+    
+    return (
+      <div className="p-3 rounded-lg bg-accent text-accent-foreground mr-3">
+        <p className="text-sm whitespace-pre-line">{message.content}</p>
+        <p className="text-xs opacity-70 mt-1 text-right">
+          {new Date(message.timestamp).toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit'
+          })}
+        </p>
+      </div>
+    );
+  };
 
   return (
     <div className="bg-card rounded-xl shadow-subtle overflow-hidden flex flex-col h-full">
@@ -249,21 +374,20 @@ const StrategyAssistant: React.FC<StrategyAssistantProps> = ({ caseId }) => {
                     </Avatar>
                   )}
                 </div>
-                <div
-                  className={`p-3 rounded-lg ${
-                    message.sender === 'user'
-                      ? 'bg-primary text-primary-foreground ml-3'
-                      : 'bg-accent text-accent-foreground mr-3'
-                  }`}
-                >
-                  <p className="text-sm whitespace-pre-line">{message.content}</p>
-                  <p className="text-xs opacity-70 mt-1 text-right">
-                    {new Date(message.timestamp).toLocaleTimeString([], {
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </p>
-                </div>
+                
+                {message.sender === 'user' ? (
+                  <div className="p-3 rounded-lg bg-primary text-primary-foreground ml-3">
+                    <p className="text-sm whitespace-pre-line">{message.content}</p>
+                    <p className="text-xs opacity-70 mt-1 text-right">
+                      {new Date(message.timestamp).toLocaleTimeString([], {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                      })}
+                    </p>
+                  </div>
+                ) : (
+                  renderAIMessage(message)
+                )}
               </div>
             </motion.div>
           ))}
