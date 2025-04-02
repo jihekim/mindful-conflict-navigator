@@ -37,6 +37,16 @@ const StakeholderLayout: React.FC<StakeholderLayoutProps> = ({
     return '';
   };
 
+  // Get personalized chat label based on user role
+  const getChatLabel = () => {
+    switch (currentUser?.role) {
+      case 'parent': return 'Parent Partner';
+      case 'teacher': return 'Educator Ally';
+      case 'student': 
+      default: return 'Peer Connect';
+    }
+  };
+
   const nextPage = getNextPage();
 
   return <div className="min-h-screen flex flex-col bg-background">
@@ -70,7 +80,7 @@ const StakeholderLayout: React.FC<StakeholderLayoutProps> = ({
               <div className="space-y-1 mt-4">
                 <button onClick={() => navigate('/stakeholder/chat')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${isActivePath('/stakeholder/chat') ? 'bg-[#5fb455] text-white' : 'hover:bg-accent'}`}>
                   <MessageSquare className="h-4 w-4" />
-                  <span>AI Chat</span>
+                  <span>{getChatLabel()}</span>
                 </button>
                 <button onClick={() => navigate('/stakeholder/report')} className={`w-full flex items-center gap-2 px-3 py-2 rounded-md text-sm transition-colors ${isActivePath('/stakeholder/report') ? 'bg-[#5fb455] text-white' : 'hover:bg-accent'}`}>
                   <FileText className="h-4 w-4" />
