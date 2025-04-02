@@ -7,7 +7,7 @@ export const TypingIndicator: React.FC = () => {
       <span></span>
       <span></span>
       <span></span>
-      <style jsx>{`
+      <style>{`
         .typing-indicator {
           display: flex;
           align-items: center;
