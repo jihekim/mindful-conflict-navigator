@@ -17,12 +17,39 @@ interface Message {
   timestamp: string;
 }
 
+// Helper function to get chat persona details based on user role
+const getChatPersona = (role: string | undefined) => {
+  switch (role) {
+    case 'parent':
+      return {
+        title: "Parent Partner",
+        introMessage: "Hi! I'm Pat, your Parent Partner. As a parent of two teenagers myself, I understand the ups and downs of navigating school issues and family dynamics. Let's work together to find the best way to support your child's needs.",
+        avatarInitial: "P"
+      };
+    case 'teacher':
+      return {
+        title: "Educator Ally",
+        introMessage: "Hello! I'm Jamie, your Educator Ally. With over a decade of teaching experience and having worked in several diverse classroom settings, I'm here to share insights and support you in your teaching journey.",
+        avatarInitial: "J"
+      };
+    case 'student':
+    default:
+      return {
+        title: "Peer Connect",
+        introMessage: "Hey there! I'm Alex from Peer Connect. I'm a college student, and I've been through a lot of the stuff you're facing now—friendships, school pressure, you name it. Feel free to share; I'm here to listen and help.",
+        avatarInitial: "A"
+      };
+  }
+};
+
 const StakeholderChat = () => {
   const { currentUser } = useAuth();
+  const chatPersona = getChatPersona(currentUser?.role);
+  
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
-      content: `Hello ${currentUser?.name}. I'm your PDR AI Assistant. You can share your perspective on the situation here, and I'll help guide you through processing your experience. Everything you share is confidential. How are you feeling today?`,
+      content: chatPersona.introMessage,
       sender: 'assistant',
       timestamp: new Date().toISOString()
     }
@@ -50,13 +77,21 @@ const StakeholderChat = () => {
           "I hear that you're feeling frustrated. What would help you feel better about this situation?",
           "It's brave of you to share this. What support do you need right now?"
         ];
-      } else if (role === 'parent' || role === 'teacher') {
+      } else if (role === 'parent') {
         aiResponses = [
-          "As someone who cares for this student, how do you think this has affected them?",
-          "From your perspective, what would a good resolution look like?",
-          "What additional context can you provide that might help in understanding the situation?",
-          "How has this situation impacted the learning environment or home life?",
-          "What steps have already been taken to address this issue?"
+          "As a parent myself, I understand your concern. How has this situation affected your child at home?",
+          "From your perspective as a parent, what would a good resolution look like?",
+          "What additional context about your family dynamics might help in understanding the situation?",
+          "How has this situation impacted your relationship with your child?",
+          "What steps have you already taken to address this issue at home?"
+        ];
+      } else if (role === 'teacher') {
+        aiResponses = [
+          "From your professional experience, how has this affected the classroom environment?",
+          "What classroom management strategies have you tried so far?",
+          "How are the other students reacting to this situation?",
+          "As an educator, what resources do you think would help address this?",
+          "What type of administrative support would be beneficial in this case?"
         ];
       } else {
         aiResponses = [
@@ -117,7 +152,7 @@ const StakeholderChat = () => {
       
       <div className="bg-card rounded-lg shadow-subtle overflow-hidden flex flex-col h-[600px]">
         <div className="p-4 border-b border-border">
-          <h3 className="font-semibold">AI Chat Assistant</h3>
+          <h3 className="font-semibold">{chatPersona.title}</h3>
           <p className="text-sm text-muted-foreground">
             Share your experience in a safe, confidential space
           </p>
@@ -137,7 +172,7 @@ const StakeholderChat = () => {
                   <div className="flex-shrink-0 mr-3">
                     {message.sender === 'assistant' ? (
                       <Avatar className="w-8 h-8 bg-[#5fb455] text-primary-foreground">
-                        <span className="text-xs">AI</span>
+                        <span className="text-xs">{chatPersona.avatarInitial}</span>
                       </Avatar>
                     ) : (
                       <Avatar className="w-8 h-8 bg-secondary text-secondary-foreground">
