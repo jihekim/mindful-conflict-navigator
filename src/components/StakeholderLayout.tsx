@@ -5,6 +5,7 @@ import { MessageSquare, FileText, Settings, Share2, FileUp, ArrowRight } from 'l
 import RoleSwitcher from './RoleSwitcher';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
+import CustomCursor from './CustomCursor';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { InfoIcon } from 'lucide-react';
 
@@ -49,12 +50,15 @@ const StakeholderLayout: React.FC<StakeholderLayoutProps> = ({
 
   const nextPage = getNextPage();
 
-  return <div className="min-h-screen flex flex-col bg-background">
+  return (
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Custom cursor for prototype demonstrations */}
+      <CustomCursor enabled={true} />
+      
       <header className="border-b border-border">
         <div className="container mx-auto py-4 px-6 flex items-center justify-between">
           <div className="flex items-center gap-2 cursor-pointer" onClick={() => navigate('/')}>
-            <h1 className="text-xl font-semibold tracking-tight">BridgePath
-          </h1>
+            <h1 className="text-xl font-semibold tracking-tight">BridgePath</h1>
             <span className="text-xs bg-[#5fb455]/10 text-[#5fb455] px-2 py-1 rounded-full">
               Community
             </span>
@@ -121,7 +125,8 @@ const StakeholderLayout: React.FC<StakeholderLayoutProps> = ({
           </main>
         </div>
       </div>
-    </div>;
+    </div>
+  );
 };
 
 export default StakeholderLayout;
