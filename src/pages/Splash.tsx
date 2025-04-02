@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -7,6 +8,7 @@ import { useAuth, predefinedUsers, UserRole } from '@/contexts/AuthContext';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+
 const Splash = () => {
   const navigate = useNavigate();
   const {
@@ -14,6 +16,7 @@ const Splash = () => {
   } = useAuth();
   const [showRoleSelector, setShowRoleSelector] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole>('student');
+
   const handleCounselorLogin = () => {
     const counselor = predefinedUsers.find(user => user.role === 'counselor');
     if (counselor) {
@@ -22,9 +25,11 @@ const Splash = () => {
       toast.success('Logged in as Counselor');
     }
   };
+
   const handleStakeholderRoleSelect = () => {
     setShowRoleSelector(true);
   };
+
   const handleStakeholderLogin = () => {
     // Find a user with the selected role or default to student
     const stakeholder = predefinedUsers.find(user => user.role === selectedRole) || predefinedUsers.find(user => user.role === 'student');
@@ -34,6 +39,7 @@ const Splash = () => {
       toast.success(`Logged in as ${stakeholder.role}`);
     }
   };
+
   return <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-background to-[#5fb455]/10 p-4">
       <motion.div initial={{
       opacity: 0,
@@ -148,4 +154,5 @@ const Splash = () => {
       </motion.p>
     </div>;
 };
+
 export default Splash;

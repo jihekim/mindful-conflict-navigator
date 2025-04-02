@@ -127,14 +127,14 @@ const Stakeholders = () => {
       <div className="p-6">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
           <div>
-            <h1 className="text-2xl font-semibold tracking-tight">Stakeholders</h1>
+            <h1 className="text-2xl font-semibold tracking-tight">Community Members</h1>
             <p className="text-muted-foreground mt-1">
-              Manage and view detailed information about all case stakeholders
+              Manage and view detailed information about all community members involved in cases
             </p>
           </div>
           <Button onClick={() => navigate('/add-stakeholder')}>
             <Plus className="w-4 h-4 mr-2" />
-            Add New Stakeholder
+            Add New Member
           </Button>
         </div>
         
@@ -142,7 +142,7 @@ const Stakeholders = () => {
           <div className="relative">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Search stakeholders by name, role, or case..."
+              placeholder="Search members by name, role, or case..."
               className="pl-8"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -154,7 +154,7 @@ const Stakeholders = () => {
           <CardHeader className="px-6 py-4 border-b">
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList>
-                <TabsTrigger value="list">All Stakeholders</TabsTrigger>
+                <TabsTrigger value="list">All Community Members</TabsTrigger>
                 {selectedStakeholder && (
                   <TabsTrigger value="details">{selectedStakeholder.name}</TabsTrigger>
                 )}

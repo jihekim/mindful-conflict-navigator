@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { MessageSquare, FileText, Settings, Share2, FileUp, ArrowRight } from 'lucide-react';
@@ -6,9 +7,11 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { InfoIcon } from 'lucide-react';
+
 interface StakeholderLayoutProps {
   children: React.ReactNode;
 }
+
 const StakeholderLayout: React.FC<StakeholderLayoutProps> = ({
   children
 }) => {
@@ -17,9 +20,11 @@ const StakeholderLayout: React.FC<StakeholderLayoutProps> = ({
   } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+
   const isActivePath = (path: string) => {
     return location.pathname === path;
   };
+
   const getNextPage = () => {
     const currentPath = location.pathname;
     if (currentPath === '/stakeholder/chat') {
@@ -31,7 +36,9 @@ const StakeholderLayout: React.FC<StakeholderLayoutProps> = ({
     }
     return '';
   };
+
   const nextPage = getNextPage();
+
   return <div className="min-h-screen flex flex-col bg-background">
       <header className="border-b border-border">
         <div className="container mx-auto py-4 px-6 flex items-center justify-between">
@@ -39,7 +46,7 @@ const StakeholderLayout: React.FC<StakeholderLayoutProps> = ({
             <h1 className="text-xl font-semibold tracking-tight">BridgePath
           </h1>
             <span className="text-xs bg-[#5fb455]/10 text-[#5fb455] px-2 py-1 rounded-full">
-              Stakeholder
+              Community
             </span>
           </div>
           <RoleSwitcher />
@@ -106,4 +113,5 @@ const StakeholderLayout: React.FC<StakeholderLayoutProps> = ({
       </div>
     </div>;
 };
+
 export default StakeholderLayout;

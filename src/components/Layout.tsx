@@ -1,16 +1,20 @@
+
 import React from 'react';
 import { SidebarProvider, Sidebar, SidebarContent, SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarTrigger } from "@/components/ui/sidebar";
 import { useNavigate, useLocation } from 'react-router-dom';
 import { CalendarDays, FolderOpen, LayoutDashboard, MessageSquare, Users } from 'lucide-react';
 import RoleSwitcher from './RoleSwitcher';
+
 interface LayoutProps {
   children: React.ReactNode;
 }
+
 const Layout: React.FC<LayoutProps> = ({
   children
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
+
   const menuItems = [{
     icon: LayoutDashboard,
     label: 'Dashboard',
@@ -21,7 +25,7 @@ const Layout: React.FC<LayoutProps> = ({
     path: '/cases'
   }, {
     icon: Users,
-    label: 'Stakeholders',
+    label: 'Community Members',
     path: '/stakeholders'
   }, {
     icon: CalendarDays,
@@ -32,6 +36,7 @@ const Layout: React.FC<LayoutProps> = ({
     label: 'Messages',
     path: '/messages'
   }];
+
   return <SidebarProvider>
       <div className="min-h-screen flex w-full bg-background">
         <Sidebar className="border-r border-border">
@@ -72,4 +77,5 @@ const Layout: React.FC<LayoutProps> = ({
       </div>
     </SidebarProvider>;
 };
+
 export default Layout;
